@@ -18,3 +18,15 @@ if [ -z "${OPENAI_API_BASE:-}" ] || [ -z "${OPENAI_API_KEY:-}" ]; then
     echo "WARNING: OPENAI_API_BASE / OPENAI_API_KEY not set; expected in ${HOME}/.env." >&2
     echo "         The @OpenCode persona will not reach a model until they are set." >&2
 fi
+
+# Optional private root CA: the deployment mounts one or more PEM files under
+# ${HOME}/.certs. Merge them with the system store and point the runtimes at the
+# combined bundle (no root, no image rebuild, no CA baked into the image).
+if [ -d "${HOME}/.certs" ] && ls "${HOME}"/.certs/*.crt >/dev/null 2>&1; then
+    BUNDLE="${HOME}/.certs/bundle.crt"
+    cat /etc/ssl/certs/ca-certificates.crt "${HOME}"/.certs/*.crt > "${BUNDLE}" 2>/dev/null \
+        && export NODE_EXTRA_CA_CERTS="${BUNDLE}" \
+        && export SSL_CERT_FILE="${BUNDLE}" \
+        && export CURL_CA_BUNDLE="${BUNDLE}" \
+        && echo "Private CA bundle loaded: ${BUNDLE}"
+fi

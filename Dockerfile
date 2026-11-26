@@ -115,9 +115,12 @@ RUN mkdir -p /home/jovyan/.config/opencode && \
     mv /tmp/opencode.config.json /home/jovyan/.config/opencode/opencode.json && \
     chown -R ${NB_UID}:${NB_GID} /home/jovyan/.config/opencode
 
-# provider base URL points at the verified TLS surface, not the plaintext
-# host-published port.
+# No CA and no endpoint is baked in. If the deployment's TLS surface uses a
+# private root, mount the DER/PEM bundle at /home/jovyan/.certs/*.crt;
+# startup-env.sh merges it into NODE_EXTRA_CA_CERTS / SSL_CERT_FILE for the
+# notebook server and the ACP child without needing root.
 USER root
+RUN mkdir -p /home/jovyan/.certs && chown ${NB_UID}:${NB_GID} /home/jovyan/.certs
 
 # outputTokenMax is a single global flag (opencode >=1.19.6): the per-request
 # max_tokens is min(limit.output, OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX), and

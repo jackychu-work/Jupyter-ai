@@ -1,0 +1,7 @@
+# Local-only harness and scratch work — never committed, never in the image.
+hub/
+.scratch/
+
+# Deployment secrets / per-host config live outside the repo.
+.env
+*.log
