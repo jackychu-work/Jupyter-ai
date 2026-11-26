@@ -27,8 +27,12 @@ COPY --from=flink-builder ${FLINK_HOME} ${FLINK_HOME}
 RUN ln -s ${FLINK_HOME}/bin/flink /usr/local/bin/flink && mkdir -p ${FLINK_HOME}/plugins/s3-fs-hadoop
 
 # Download compatible Paimon, Flink SQL Client, and S3 connector JARs into /opt/flink/lib
-RUN wget -O ${FLINK_HOME}/lib/paimon-flink-1.20-1.3.2.jar https://repo.maven.apache.org/maven2/org/apache/paimon/paimon-flink-1.20/1.3.2/paimon-flink-1.20-1.3.2.jar && \
-    wget -O ${FLINK_HOME}/lib/paimon-s3-1.3.2.jar https://repo.maven.apache.org/maven2/org/apache/paimon/paimon-s3/1.3.2/paimon-s3-1.3.2.jar && \
+# Paimon 1.4.2 (not 1.3.2) for its bundled httpclient5 5.5.1 / aircompressor 2.0.3 /
+# commons-lang3 3.18.0, which clear three Clair findings; jackson 2.14.3 and
+# protobuf-java 3.19.6 are unchanged upstream, and httpcore5 5.3.6 is still below
+# the 5.4.3 fix.
+RUN wget -O ${FLINK_HOME}/lib/paimon-flink-1.20-1.4.2.jar https://repo.maven.apache.org/maven2/org/apache/paimon/paimon-flink-1.20/1.4.2/paimon-flink-1.20-1.4.2.jar && \
+    wget -O ${FLINK_HOME}/lib/paimon-s3-1.4.2.jar https://repo.maven.apache.org/maven2/org/apache/paimon/paimon-s3/1.4.2/paimon-s3-1.4.2.jar && \
     wget -O ${FLINK_HOME}/lib/flink-sql-client-1.20.5.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-client/1.20.5/flink-sql-client-1.20.5.jar && \
     wget -O ${FLINK_HOME}/lib/flink-shaded-hadoop-2-uber-2.8.3-10.0.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-shaded-hadoop-2-uber/2.8.3-10.0/flink-shaded-hadoop-2-uber-2.8.3-10.0.jar && \
     wget -O ${FLINK_HOME}/plugins/s3-fs-hadoop/flink-s3-fs-hadoop-1.20.5.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-s3-fs-hadoop/1.20.5/flink-s3-fs-hadoop-1.20.5.jar && \
