@@ -1,0 +1,16 @@
+# JupyterHub control plane for local DockerSpawner testing (native docker-ce
+# inside WSL2, no Docker Desktop). Keep JUPYTERHUB_VERSION equal to the
+# `jupyterhub` version inside the single-user image (jupyter-ai:local ships
+# 6.2.0 today).
+ARG JUPYTERHUB_VERSION=6.2.0
+FROM quay.io/jupyterhub/jupyterhub:${JUPYTERHUB_VERSION}
+
+# The stock hub image has no dockerspawner; the spawner talks to the daemon
+# through the mounted /var/run/docker.sock (docker SDK, no CLI needed).
+RUN python3 -m pip install --no-cache-dir dockerspawner==14.0.0
+
+# Config is baked in (not bind-mounted) so `docker compose up` works from
+# Windows or from inside WSL against the in-WSL engine.
+COPY jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
+
+CMD ["jupyterhub", "-f", "/srv/jupyterhub/jupyterhub_config.py"]

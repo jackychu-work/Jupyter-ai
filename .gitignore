@@ -1,7 +1,13 @@
-# Local-only harness and scratch work — never committed, never in the image.
-hub/
+# Local-only scratch work — never committed, never in the image.
 .scratch/
 
 # Deployment secrets / per-host config live outside the repo.
 .env
 *.log
+
+# Never commit key material or private roots. The image mounts certs at runtime
+# (`$HOME/.certs/*.crt`); provide them on the host, not here.
+*.crt
+*.pem
+*.key
+*.p12

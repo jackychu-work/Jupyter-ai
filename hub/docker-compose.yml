@@ -1,0 +1,42 @@
+name: jupyter-ai-hub
+
+services:
+  hub:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyterhub
+      args:
+        # Must match `jupyterhub.__version__` inside DOCKER_NOTEBOOK_IMAGE.
+        JUPYTERHUB_VERSION: "6.2.0"
+    image: jupyter-ai-hub:local
+    container_name: jupyterhub
+    restart: unless-stopped
+    networks:
+      - jupyterhub-network
+    ports:
+      # Loopback-only: dummy auth + docker-socket hub must never face the LAN.
+      # WSL2 localhost forwarding still exposes this to the Windows browser.
+      - "127.0.0.1:8000:8000"
+    volumes:
+      # DockerSpawner creates sibling containers on this daemon; path is the
+      # same for the in-WSL engine whether compose runs on Windows or in WSL.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jupyterhub-data:/data
+    environment:
+      DOCKER_NETWORK_NAME: jupyterhub-network
+      DOCKER_NOTEBOOK_IMAGE: ${DOCKER_NOTEBOOK_IMAGE:-jupyter-ai:local}
+      DOCKER_NOTEBOOK_DIR: /home/jovyan/work
+      DOCKER_NOTEBOOK_PULL_POLICY: ${DOCKER_NOTEBOOK_PULL_POLICY:-ifnotpresent}
+      SPAWN_MEM_LIMIT: ${SPAWN_MEM_LIMIT:-}
+      JUPYTERHUB_ADMIN: ${JUPYTERHUB_ADMIN:-admin}
+      # AI gateway endpoint + key handed to spawned opencode containers
+      # (same names the image reads from /home/jovyan/.env).
+      OPENAI_API_BASE: ${OPENAI_API_BASE:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+
+volumes:
+  jupyterhub-data:
+
+networks:
+  jupyterhub-network:
+    name: jupyterhub-network
