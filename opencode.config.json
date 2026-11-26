@@ -1,0 +1,26 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "disabled_providers": ["opencode", "openai"],
+  "model": "litellm/deepseek-v4.1-flash",
+  "small_model": "litellm/deepseek-v4.1-flash",
+  "provider": {
+    "litellm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Sands",
+      "options": {
+        "baseURL": "{env:OPENAI_API_BASE}",
+        "apiKey": "{env:OPENAI_API_KEY}"
+      },
+      "models": {
+        "deepseek-v4.1-flash": {
+          "name": "DeepSeek V4.1 Flash (Sands)",
+          "limit": { "context": 327680, "output": 65536 }
+        },
+        "Qwen/Qwen3.8-27B": {
+          "name": "Qwen3.8 27B (Sands)",
+          "limit": { "context": 655360, "output": 131072 }
+        }
+      }
+    }
+  }
+}

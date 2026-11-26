@@ -80,8 +80,55 @@ USER ${NB_UID}
 
 # Install Python dependencies
 COPY --chown=${NB_UID}:${NB_GID} requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir uv && \
-    uv pip install --system --no-cache-dir -r /tmp/requirements.txt && \
-    rm /tmp/requirements.txt
+COPY --chown=${NB_UID}:${NB_GID} requirements-overrides.txt /tmp/requirements-overrides.txt
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY \
+      no_proxy NO_PROXY all_proxy ALL_PROXY && \
+    pip install --no-cache-dir uv && \
+    uv pip install --system --no-cache-dir \
+      -r /tmp/requirements.txt \
+      --overrides /tmp/requirements-overrides.txt && \
+    rm /tmp/requirements.txt /tmp/requirements-overrides.txt
+
+# Python 3.12 fallback kernel. The server, jupyter-ai and the MCP tool stack
+# stay on the base 3.13 interpreter; this env only backs the "Python 3.12"
+# kernelspec for user code that has no 3.13 wheels yet. -p keeps mamba out of
+# the base env at /opt/conda, so 3.13 packages are never touched. The science
+# packages mirror the base image's Python stack (R/Julia stay 3.13-side only).
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY \
+      no_proxy NO_PROXY all_proxy ALL_PROXY && \
+    mamba create -y -p /opt/conda/envs/py312 \
+      python=3.12 ipykernel pip \
+      numpy pandas scipy matplotlib-base seaborn scikit-learn \
+      statsmodels sympy numba bokeh altair ipywidgets && \
+    /opt/conda/envs/py312/bin/python -m ipykernel install \
+      --prefix /opt/conda --name python312 --display-name "Python 3.12" && \
+    mamba clean --all -f -y && \
+    rm -rf /opt/conda/pkgs
+
+# AI gateway as an opencode provider. Nothing secret is baked in: the endpoint
+# and the model-scoped virtual key come from OPENAI_API_BASE / OPENAI_API_KEY,
+# which the startup hook exports from /home/jovyan/.env (the documented
+# deployment contract). Only models the gateway actually serves are declared
+# (verified 2026-11-26).
+COPY --chown=${NB_UID}:${NB_GID} opencode.config.json /tmp/opencode.config.json
+RUN mkdir -p /home/jovyan/.config/opencode && \
+    mv /tmp/opencode.config.json /home/jovyan/.config/opencode/opencode.json && \
+    chown -R ${NB_UID}:${NB_GID} /home/jovyan/.config/opencode
+
+# provider base URL points at the verified TLS surface, not the plaintext
+# host-published port.
+USER root
+
+# outputTokenMax is a single global flag (opencode >=1.19.6): the per-request
+# max_tokens is min(limit.output, OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX), and
+# that flag defaults to 32000. Raise it above the largest per-model limit so
+# each model's own limit.output decides (DeepSeek 64K, Qwen 128K); the
+# compaction threshold is then context - limit.output = the model's input budget.
+ENV OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX=131072
+
+# start.sh sources every *.sh in start-notebook.d, so exporting ~/.env here is
+# what makes OPENAI_API_BASE / OPENAI_API_KEY visible to the ACP persona.
+COPY --chmod=0644 startup-env.sh /usr/local/bin/start-notebook.d/10-ai-gateway-env.sh
+USER ${NB_UID}
 
 WORKDIR ${HOME}

@@ -1,0 +1,20 @@
+# uv requirement overrides (passed via `uv pip install --overrides`).
+#
+# jupyter-ai 3.2.0 pins jupyter-ai-tools<0.8.0 and jupyterlab-commands-toolkit<0.3.0,
+# but the tools in those pinned versions make every Jupyter MCP tool call depend on
+# a live JupyterLab frontend that has the notebook open as a ready widget:
+#   - read tools: run_lab_command(...) -> payload["content"] -> KeyError('content')
+#     (a 10 s frontend timeout surfaces as an opaque KeyError)
+#   - write tools: fixed 10 s wait -> "Command timed out after 10.0 seconds"
+# jupyter-ai-tools 0.8.0 fixes exactly this (DiskAdapter/YDocAdapter fall back to the
+# file when no frontend/room can serve the notebook, and failures raise the real
+# frontend error). It requires jupyterlab-commands-toolkit>=0.3.1, which adds the
+# structured error_code (no_web_client / not_acknowledged / timeout) those fallbacks
+# key off. All jupyter_ai.mcp_tools entrypoints used by jupyter-ai 3.2.0 still exist
+# in 0.8.0 (toolkits/notebook.py + toolkits/jupyterlab.py).
+#
+# Verified 2026-11-23: with no browser attached, read_notebook_cells / read_notebook /
+# insert_cell succeed against the file and run_all_cells returns a structured
+# error_code=no_web_client instead of KeyError/timeouts.
+jupyter-ai-tools==0.8.0
+jupyterlab-commands-toolkit==0.3.1

@@ -5,7 +5,16 @@
 uv
 jupyter-server-proxy>=4.6.1
 jupyter_scheduler
-jupyter-ai
+# RTC extra: installs jupyter-collaboration (+ jupyterlab-notebook-awareness) so
+# `jupyter_ai_tools.rtc_available()` is true and the agent tools read/write the
+# notebook through the server-side YDoc / on-disk file instead of depending on a
+# live JupyterLab frontend tab (a stale or not-yet-rendered tab made read tools
+# raise KeyError('content') and write tools time out after 10 s).
+jupyter-ai[rtc]
+# Frontend-independent notebook tools (see requirements-overrides.txt for why
+# jupyter-ai's <0.8.0 / <0.3.0 pins are overridden).
+jupyter-ai-tools==0.8.0
+jupyterlab-commands-toolkit==0.3.1
 
 # Security floors (2026-11-18 vulnfix round: at or above the base image builds
 # that clear the previous grype findings)
