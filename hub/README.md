@@ -154,8 +154,8 @@ Model allowlist — exactly two, everything else is removed from the registry:
 
 | model id | picker label | limit (context / output) | input budget |
 |---|---|---|---|
-| `deepseek-v4.1-flash` | `Sands/DeepSeek V4.1 Flash (Sands)` | 327680 / 65536 | 262144 |
-| `Qwen/Qwen3.8-27B` | `Sands/Qwen3.8 27B (Sands)` | 655360 / 131072 | 524288 |
+| `deepseek-v4.1-flash` | `Sands/DeepSeek V4.1 Flash` | 327680 / 65536 | 262144 |
+| `Qwen/Qwen3.8-27B` | `Sands/Qwen3.8 27B` | 655360 / 131072 | 524288 |
 
 `context` is the **total** window: opencode's compaction threshold is
 `context − min(limit.output, OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX)`, so

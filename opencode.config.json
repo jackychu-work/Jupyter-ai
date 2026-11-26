@@ -13,11 +13,11 @@
       },
       "models": {
         "deepseek-v4.1-flash": {
-          "name": "DeepSeek V4.1 Flash (Sands)",
+          "name": "DeepSeek V4.1 Flash",
           "limit": { "context": 327680, "output": 65536 }
         },
         "Qwen/Qwen3.8-27B": {
-          "name": "Qwen3.8 27B (Sands)",
+          "name": "Qwen3.8 27B",
           "limit": { "context": 655360, "output": 131072 }
         }
       }

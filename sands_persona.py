@@ -15,11 +15,20 @@ Re-apply after upgrading `jupyter_ai_acp_client`: the entry point lives in that
 distribution's `entry_points.txt`, which pip regenerates.
 """
 
+import os
+
 from jupyter_ai_acp_client.acp_personas.opencode import OpenCodeAcpPersona
+
+# Brand asset installed next to this module by the Dockerfile. `avatar_path` is
+# an absolute filesystem path; the persona manager caches it at startup and
+# serves it at `{base_url}api/ai/avatars/{persona_id}` (any SVG/PNG, <= 5 MB).
+AVATAR_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "sands-logo.svg"
+)
 
 
 class SandsAssistantPersona(OpenCodeAcpPersona):
-    """OpenCode ACP persona presented under the Sands brand."""
+    """OpenCode ACP persona presented under the Sands China brand."""
 
     @property
     def defaults(self):
@@ -27,5 +36,6 @@ class SandsAssistantPersona(OpenCodeAcpPersona):
             update={
                 "name": "Sands AI",
                 "description": "Sands AI assistant.",
+                "avatar_path": AVATAR_PATH,
             }
         )

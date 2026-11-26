@@ -95,11 +95,12 @@ RUN pip install --no-cache-dir uv && \
 # exposes no rename or filter knob, and entry-point personas are concatenated
 # with local ones, so a subclass alone would list a second "OpenCode" persona.
 # Repointing the `opencode-acp` entry point keeps exactly one persona.
-COPY --chown=${NB_UID}:${NB_GID} sands_persona.py /tmp/sands_persona.py
+COPY --chown=${NB_UID}:${NB_GID} sands_persona.py sands-logo.svg /tmp/
 RUN SP="$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')" && \
-    install -m 0644 /tmp/sands_persona.py "${SP}/sands_persona.py" && \
+    install -m 0644 /tmp/sands_persona.py /tmp/sands-logo.svg "${SP}/" && \
+    if [ ! -s "${SP}/sands-logo.svg" ]; then echo "sands-logo.svg missing or empty" >&2; exit 1; fi && \
     python -c 'import pathlib, sys; sp = pathlib.Path(sys.argv[1]); ep = next(sp.glob("jupyter_ai_acp_client-*.dist-info/entry_points.txt")); old = "opencode-acp = jupyter_ai_acp_client.acp_personas.opencode:OpenCodeAcpPersona"; new = "opencode-acp = sands_persona:SandsAssistantPersona"; text = ep.read_text(); assert old in text, "opencode-acp entry point not found in %s" % ep; ep.write_text(text.replace(old, new))' "${SP}" && \
-    rm /tmp/sands_persona.py
+    rm /tmp/sands_persona.py /tmp/sands-logo.svg
 
 # Python 3.12 fallback kernel. The server, jupyter-ai and the MCP tool stack
 # stay on the base 3.13 interpreter; this env only backs the "Python 3.12"
