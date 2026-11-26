@@ -125,9 +125,10 @@ RUN mkdir -p /home/jovyan/.config/opencode && \
     chown -R ${NB_UID}:${NB_GID} /home/jovyan/.config/opencode
 
 # No CA and no endpoint is baked in. If the deployment's TLS surface uses a
-# private root, mount the DER/PEM bundle at /home/jovyan/.certs/*.crt;
-# startup-env.sh merges it into NODE_EXTRA_CA_CERTS / SSL_CERT_FILE for the
-# notebook server and the ACP child without needing root.
+# private root, mount PEM certificates at /home/jovyan/.certs/*.crt (read-only
+# is fine); startup-env.sh merges them into /home/jovyan/.ca-bundle.crt and
+# exports NODE_EXTRA_CA_CERTS / SSL_CERT_FILE / CURL_CA_BUNDLE for the notebook
+# server and the ACP child without needing root. DER is not supported.
 USER root
 RUN mkdir -p /home/jovyan/.certs && chown ${NB_UID}:${NB_GID} /home/jovyan/.certs
 
