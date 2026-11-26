@@ -9,7 +9,8 @@ USER root
 # Install runtime dependencies and apply all available security updates.
 #   - ffmpeg (deb) is not required by the stack -> remove to cut scanner findings
 #   - nodejs is installed from conda-forge below (avoids the ~880 Debian node-* packages)
-RUN apt-get update && \
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY all_proxy ALL_PROXY && \
+    apt-get update && \
     apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
     sssd libltdl7 libkrb5-3 libgssapi-krb5-2 gnupg2 unixodbc unixodbc-dev odbcinst tdsodbc libkrb5-dev libssl-dev ca-certificates dirmngr gpg-agent wget curl \
@@ -31,7 +32,8 @@ RUN ln -s ${FLINK_HOME}/bin/flink /usr/local/bin/flink && mkdir -p ${FLINK_HOME}
 # commons-lang3 3.18.0, which clear three Clair findings; jackson 2.14.3 and
 # protobuf-java 3.19.6 are unchanged upstream, and httpcore5 5.3.6 is still below
 # the 5.4.3 fix.
-RUN wget -O ${FLINK_HOME}/lib/paimon-flink-1.20-1.4.2.jar https://repo.maven.apache.org/maven2/org/apache/paimon/paimon-flink-1.20/1.4.2/paimon-flink-1.20-1.4.2.jar && \
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY all_proxy ALL_PROXY && \
+    wget -O ${FLINK_HOME}/lib/paimon-flink-1.20-1.4.2.jar https://repo.maven.apache.org/maven2/org/apache/paimon/paimon-flink-1.20/1.4.2/paimon-flink-1.20-1.4.2.jar && \
     wget -O ${FLINK_HOME}/lib/paimon-s3-1.4.2.jar https://repo.maven.apache.org/maven2/org/apache/paimon/paimon-s3/1.4.2/paimon-s3-1.4.2.jar && \
     wget -O ${FLINK_HOME}/lib/flink-sql-client-1.20.5.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-client/1.20.5/flink-sql-client-1.20.5.jar && \
     wget -O ${FLINK_HOME}/lib/flink-shaded-hadoop-2-uber-2.8.3-10.0.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-shaded-hadoop-2-uber/2.8.3-10.0/flink-shaded-hadoop-2-uber-2.8.3-10.0.jar && \
@@ -40,7 +42,8 @@ RUN wget -O ${FLINK_HOME}/lib/paimon-flink-1.20-1.4.2.jar https://repo.maven.apa
 
 # Connectors/drivers required by the reference runtime (/opt/flink/lib listing):
 # JDBC + MySQL driver, MySQL/SQLServer CDC SQL connectors, unshaded Hadoop 3.4.0 client jars.
-RUN wget -O ${FLINK_HOME}/lib/flink-connector-jdbc-core-3.3.0-1.20.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-jdbc-core/3.3.0-1.20/flink-connector-jdbc-core-3.3.0-1.20.jar && \
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY all_proxy ALL_PROXY && \
+    wget -O ${FLINK_HOME}/lib/flink-connector-jdbc-core-3.3.0-1.20.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-jdbc-core/3.3.0-1.20/flink-connector-jdbc-core-3.3.0-1.20.jar && \
     wget -O ${FLINK_HOME}/lib/mysql-connector-j-9.3.0.jar https://repo.maven.apache.org/maven2/com/mysql/mysql-connector-j/9.3.0/mysql-connector-j-9.3.0.jar && \
     wget -O ${FLINK_HOME}/lib/flink-sql-connector-mysql-cdc-3.5.0.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-mysql-cdc/3.5.0/flink-sql-connector-mysql-cdc-3.5.0.jar && \
     wget -O ${FLINK_HOME}/lib/flink-sql-connector-sqlserver-cdc-3.5.0.jar https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-sqlserver-cdc/3.5.0/flink-sql-connector-sqlserver-cdc-3.5.0.jar && \
@@ -50,7 +53,8 @@ RUN wget -O ${FLINK_HOME}/lib/flink-connector-jdbc-core-3.3.0-1.20.jar https://r
 
 # Replace the vulnerable log4j 2.24.3 jars bundled with the Flink 1.20.5 distro (CVE fixes).
 # flink-table-api-java-uber / planner-loader / runtime come from the distro at 1.20.5, no override needed.
-RUN cd ${FLINK_HOME}/lib && \
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY all_proxy ALL_PROXY && \
+    cd ${FLINK_HOME}/lib && \
     wget -O log4j-api-2.25.5.jar https://repo.maven.apache.org/maven2/org/apache/logging/log4j/log4j-api/2.25.5/log4j-api-2.25.5.jar && \
     wget -O log4j-core-2.25.5.jar https://repo.maven.apache.org/maven2/org/apache/logging/log4j/log4j-core/2.25.5/log4j-core-2.25.5.jar && \
     wget -O log4j-1.2-api-2.25.5.jar https://repo.maven.apache.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.25.5/log4j-1.2-api-2.25.5.jar && \
@@ -66,7 +70,8 @@ RUN mkdir -p /home/jovyan/.flink/logs /home/jovyan/.flink/pids && \
 # Install a maintained Node.js 22 from conda-forge instead of the Debian node-* packages.
 # opencode-ai backs the @OpenCode ACP persona from jupyter-ai-acp-client
 # (`opencode acp`, protocol v1); /etc/opencode disables self-update in the image.
-RUN mamba install -y -n base -c conda-forge "nodejs=22" && \
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY all_proxy ALL_PROXY && \
+    mamba install -y -n base -c conda-forge "nodejs=22" && \
     mamba clean -ay && \
     rm -rf /usr/local/lib/node_modules /usr/local/bin/configurable-http-proxy /usr/local/bin/glob && \
     npm install -g configurable-http-proxy cross-spawn@^7.0.5 glob@^10.5.0 requirejs@^2.3.7 npm@11 opencode-ai@1.19.6 && \

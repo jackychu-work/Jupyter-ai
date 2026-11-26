@@ -1,0 +1,10 @@
+# Keep the build context free of local-only state. `.gitignore` does not apply
+# to `docker build`; without this, `.scratch/` (deployment .env with a live key,
+# private root CA, pre-scrub history bundle) would be uploaded to the daemon.
+.git
+.scratch
+hub
+.env
+*.bundle
+*.log
+IMG_*.jpeg
